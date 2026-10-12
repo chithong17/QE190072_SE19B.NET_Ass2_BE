@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy solution and project files
-COPY ["QE190072_SE19B.NET_Ass1_BE.sln", "./"]
+COPY ["QE190072_SE19B.NET_Ass2_BE.sln", "./"]
 COPY ["TaskTrack.API/TaskTrack.API.csproj", "TaskTrack.API/"]
 COPY ["TaskTrack.Service/TaskTrack.Service.csproj", "TaskTrack.Service/"]
 COPY ["TaskTrack.Repo/TaskTrack.Repo.csproj", "TaskTrack.Repo/"]

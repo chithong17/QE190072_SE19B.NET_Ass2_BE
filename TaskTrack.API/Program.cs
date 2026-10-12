@@ -137,6 +137,52 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
 
+// Auto-seed SystemAccount table and default Admin account on startup
+try
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<TaskmanagementDbEgrzContext>();
+    var initSql = """
+    CREATE TABLE IF NOT EXISTS "SystemAccount" (
+        "AccountID"     SERIAL          PRIMARY KEY,
+        "FullName"      VARCHAR(100)    NOT NULL,
+        "Email"         VARCHAR(150)    NOT NULL UNIQUE,
+        "PasswordHash"  VARCHAR(255)    NOT NULL,
+        "Role"          SMALLINT        NOT NULL DEFAULT 0,
+        "CreatedDate"   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    ALTER TABLE "Task" 
+    ADD COLUMN IF NOT EXISTS "CreatedByID" INT NULL,
+    ADD COLUMN IF NOT EXISTS "UpdatedByID" INT NULL;
+
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'FK_Task_CreatedBy') THEN
+            ALTER TABLE "Task" ADD CONSTRAINT "FK_Task_CreatedBy" FOREIGN KEY ("CreatedByID") REFERENCES "SystemAccount" ("AccountID") ON DELETE RESTRICT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'FK_Task_UpdatedBy') THEN
+            ALTER TABLE "Task" ADD CONSTRAINT "FK_Task_UpdatedBy" FOREIGN KEY ("UpdatedByID") REFERENCES "SystemAccount" ("AccountID") ON DELETE SET NULL;
+        END IF;
+    END $$;
+
+    INSERT INTO "SystemAccount" ("FullName", "Email", "PasswordHash", "Role", "CreatedDate")
+    VALUES (
+        'System Administrator',
+        'admin@tasktrack.com',
+        '$2b$12$zChRFFhiP3GPQGFOR8jrX.x0tFssKY6F9QyIgSQq/8cdR242rVfei',
+        1,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("Email") DO NOTHING;
+    """;
+    db.Database.ExecuteSqlRaw(initSql);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"DB Auto-Init Warning: {ex.Message}");
+}
+
 // Keep Swagger available locally and after deployment for assignment review.
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -8,14 +8,14 @@ COPY ["TaskTrack.API/TaskTrack.API.csproj", "TaskTrack.API/"]
 COPY ["TaskTrack.Service/TaskTrack.Service.csproj", "TaskTrack.Service/"]
 COPY ["TaskTrack.Repo/TaskTrack.Repo.csproj", "TaskTrack.Repo/"]
 
-RUN dotnet restore
+RUN dotnet restore "TaskTrack.API/TaskTrack.API.csproj"
 
 # Copy all source files
 COPY . .
 
 # Publish release
 WORKDIR "/src/TaskTrack.API"
-RUN dotnet publish "TaskTrack.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "TaskTrack.API.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
 # Runtime Stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final

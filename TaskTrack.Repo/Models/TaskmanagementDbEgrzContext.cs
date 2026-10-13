@@ -144,6 +144,9 @@ public partial class TaskmanagementDbEgrzContext : DbContext
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone");
+            entity.Property(e => e.RefreshToken).HasMaxLength(500);
+            entity.Property(e => e.RefreshTokenExpiryTime)
+                .HasColumnType("timestamp without time zone");
         });
 
         OnModelCreatingPartial(modelBuilder);

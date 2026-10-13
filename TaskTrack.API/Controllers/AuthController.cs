@@ -112,5 +112,42 @@ namespace TaskTrack.API.Controllers
 
             return Ok(new { message = "Password changed successfully." });
         }
+
+        /// <summary>
+        /// Refresh access token using a valid refresh token (Public - no token required)
+        /// </summary>
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _authService.RefreshTokenAsync(dto);
+            if (!result.Success)
+            {
+                return Unauthorized(new { message = result.ErrorMessage });
+            }
+
+            return Ok(result.Auth);
+        }
+
+        /// <summary>
+        /// Revoke the active refresh token for the logged-in user (Authenticated)
+        /// </summary>
+        [HttpPost("revoke")]
+        [Authorize]
+        public async Task<IActionResult> Revoke()
+        {
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (int.TryParse(accountIdClaim, out var accountId))
+            {
+                await _authService.RevokeRefreshTokenAsync(accountId);
+            }
+
+            return Ok(new { message = "Refresh token revoked successfully." });
+        }
     }
 }

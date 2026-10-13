@@ -17,6 +17,10 @@ public partial class SystemAccount
 
     public DateTime CreatedDate { get; set; }
 
+    public string? RefreshToken { get; set; }
+
+    public DateTime? RefreshTokenExpiryTime { get; set; }
+
     public virtual ICollection<Task> TasksCreated { get; set; } = new List<Task>();
 
     public virtual ICollection<Task> TasksUpdated { get; set; } = new List<Task>();

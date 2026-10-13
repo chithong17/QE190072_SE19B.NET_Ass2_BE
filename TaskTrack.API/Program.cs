@@ -149,8 +149,14 @@ try
         "Email"         VARCHAR(150)    NOT NULL UNIQUE,
         "PasswordHash"  VARCHAR(255)    NOT NULL,
         "Role"          SMALLINT        NOT NULL DEFAULT 0,
-        "CreatedDate"   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+        "CreatedDate"   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "RefreshToken"  VARCHAR(500)    NULL,
+        "RefreshTokenExpiryTime" TIMESTAMP NULL
     );
+
+    ALTER TABLE "SystemAccount" 
+    ADD COLUMN IF NOT EXISTS "RefreshToken" VARCHAR(500) NULL,
+    ADD COLUMN IF NOT EXISTS "RefreshTokenExpiryTime" TIMESTAMP NULL;
 
     ALTER TABLE "Task" 
     ADD COLUMN IF NOT EXISTS "CreatedByID" INT NULL,

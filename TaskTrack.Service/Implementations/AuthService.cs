@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -89,11 +90,17 @@ namespace TaskTrack.Service.Implementations
             }
 
             var token = GenerateJwtToken(account);
+            var refreshToken = GenerateRefreshToken();
             var expiresAt = DateTime.UtcNow.AddHours(24);
+
+            account.RefreshToken = refreshToken;
+            account.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
 
             var response = new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 AccountId = account.AccountId,
                 FullName = account.FullName,
                 Email = account.Email,
@@ -102,6 +109,66 @@ namespace TaskTrack.Service.Implementations
             };
 
             return (true, null, response);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage, AuthResponseDto? Auth)> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            {
+                return (false, "Refresh token is required.", null);
+            }
+
+            var account = await _context.SystemAccounts
+                .FirstOrDefaultAsync(a => a.RefreshToken == dto.RefreshToken);
+
+            if (account == null || account.RefreshTokenExpiryTime == null || account.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return (false, "Invalid or expired refresh token.", null);
+            }
+
+            var newJwtToken = GenerateJwtToken(account);
+            var newRefreshToken = GenerateRefreshToken();
+            var expiresAt = DateTime.UtcNow.AddHours(24);
+
+            account.RefreshToken = newRefreshToken;
+            account.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            var response = new AuthResponseDto
+            {
+                Token = newJwtToken,
+                RefreshToken = newRefreshToken,
+                AccountId = account.AccountId,
+                FullName = account.FullName,
+                Email = account.Email,
+                Role = account.Role,
+                ExpiresAt = expiresAt
+            };
+
+            return (true, null, response);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> RevokeRefreshTokenAsync(int accountId)
+        {
+            var account = await _context.SystemAccounts.FindAsync(accountId);
+            if (account == null)
+            {
+                return (false, "Account not found.");
+            }
+
+            account.RefreshToken = null;
+            account.RefreshTokenExpiryTime = null;
+            await _context.SaveChangesAsync();
+
+            return (true, null);
+        }
+
+        private static string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
         public string GenerateJwtToken(SystemAccount account)

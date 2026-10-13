@@ -8,8 +8,15 @@ CREATE TABLE IF NOT EXISTS "SystemAccount" (
     "Email"         VARCHAR(150)    NOT NULL UNIQUE,
     "PasswordHash"  VARCHAR(255)    NOT NULL,
     "Role"          SMALLINT        NOT NULL DEFAULT 0, -- 0 = Staff, 1 = Admin
-    "CreatedDate"   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "CreatedDate"   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "RefreshToken"  VARCHAR(500)    NULL,
+    "RefreshTokenExpiryTime" TIMESTAMP NULL
 );
+
+-- Support Bonus: Refresh Token session renewal
+ALTER TABLE "SystemAccount"
+ADD COLUMN IF NOT EXISTS "RefreshToken" VARCHAR(500) NULL,
+ADD COLUMN IF NOT EXISTS "RefreshTokenExpiryTime" TIMESTAMP NULL;
 
 -- Optional audit fields on Task table (supports Bonus & Delete account constraint)
 ALTER TABLE "Task" 

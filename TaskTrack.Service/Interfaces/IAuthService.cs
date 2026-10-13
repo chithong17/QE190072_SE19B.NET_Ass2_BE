@@ -8,6 +8,8 @@ namespace TaskTrack.Service.Interfaces
     {
         Task<(bool Success, string? ErrorMessage, AccountResponseDto? Account)> RegisterStaffAsync(RegisterRequestDto dto);
         Task<(bool Success, string? ErrorMessage, AuthResponseDto? Auth)> LoginAsync(LoginRequestDto dto);
+        Task<(bool Success, string? ErrorMessage, AuthResponseDto? Auth)> RefreshTokenAsync(RefreshTokenRequestDto dto);
+        Task<(bool Success, string? ErrorMessage)> RevokeRefreshTokenAsync(int accountId);
         string GenerateJwtToken(SystemAccount account);
         Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(int accountId, ChangePasswordRequestDto dto);
     }

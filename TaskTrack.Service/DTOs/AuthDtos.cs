@@ -32,12 +32,21 @@ namespace TaskTrack.Service.DTOs
     public class AuthResponseDto
     {
         public string Token { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
         public int AccountId { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public short Role { get; set; } // 0 = Staff, 1 = Admin
         public string RoleName => Role == 1 ? "Admin" : "Staff";
         public DateTime ExpiresAt { get; set; }
+    }
+
+    public class RefreshTokenRequestDto
+    {
+        public string? Token { get; set; }
+
+        [Required(ErrorMessage = "RefreshToken is required.")]
+        public string RefreshToken { get; set; } = string.Empty;
     }
 
     public class AccountResponseDto

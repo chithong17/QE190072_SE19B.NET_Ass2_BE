@@ -25,7 +25,6 @@ namespace TaskTrack.API.Controllers
             return Ok(data);
         }
 
-        [Authorize]
         [HttpGet("manage")]
         public async Task<IActionResult> GetAllForManagement()
         {

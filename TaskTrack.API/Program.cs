@@ -6,6 +6,7 @@ using TaskTrack.Repo.Models;
 using TaskTrack.Repo.Repositories;
 using TaskTrack.Service.Interfaces;
 using TaskTrack.Service.Implementations;
+using TaskTrack.Service.DTOs;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System.Text.Json.Serialization;
@@ -101,8 +102,23 @@ builder.Services.AddDbContext<TaskmanagementDbEgrzContext>(options =>
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["JWT_SECRET"]
-    ?? builder.Configuration["Jwt:Secret"]
-    ?? "TaskTrackSuperSecretSecurityKey_2026_PRN232_Assignment2_Default!";
+    ?? builder.Configuration["Jwt:Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT_SECRET is not configured or is shorter than 32 characters. " +
+        "Set JWT_SECRET in the environment (or Jwt:Secret in local user secrets)."
+    );
+}
+
+var jwtSettings = new JwtSettings
+{
+    Secret = jwtSecret,
+    Issuer = builder.Configuration["Jwt:Issuer"] ?? "TaskTrackAPI",
+    Audience = builder.Configuration["Jwt:Audience"] ?? "TaskTrackClient"
+};
+builder.Services.AddSingleton(jwtSettings);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -117,8 +133,11 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidateAudience = true,
+        ValidAudience = jwtSettings.Audience,
+        ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
         RoleClaimType = ClaimTypes.Role
     };

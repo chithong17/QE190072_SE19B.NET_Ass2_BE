@@ -13,6 +13,6 @@ namespace TaskTrack.Service.Interfaces
         Task<IEnumerable<TaskDto>> SearchTasksAsync(string? title, int? status, int? priority, int? projectId, int? tagId);
         Task<TaskTrack.Repo.Models.Task> CreateTaskAsync(TaskTrack.Repo.Models.Task task, int[]? tagIds);
         Task<TaskTrack.Repo.Models.Task?> UpdateTaskAsync(int id, TaskTrack.Repo.Models.Task task, int[]? tagIds);
-        Task<bool> SoftDeleteTaskAsync(int id);
+        Task<bool> SoftDeleteTaskAsync(int id, int updatedById);
     }
 }

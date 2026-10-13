@@ -1,6 +1,6 @@
 # TaskTrack Backend - PRN232 Assignment 1
 
-Backend Web API cho hệ thống quản lý công việc **TaskTrack**, xây dựng trên nền tảng **.NET 9**, **Entity Framework Core**, và cơ sở dữ liệu **PostgreSQL**.
+Backend Web API cho hệ thống quản lý công việc **TaskTrack**, xây dựng trên nền tảng **.NET 8**, **Entity Framework Core**, và cơ sở dữ liệu **PostgreSQL**.
 
 ---
 
@@ -41,7 +41,7 @@ QE190072_SE19B.NET_Ass1_BE/
 ## ⚙️ Yêu cầu môi trường & Biến môi trường (Prerequisites & Environment)
 
 ### Yêu cầu:
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - PostgreSQL Database (hoặc dịch vụ đám mây như Render PostgreSQL, Supabase, Neon)
 
 ### Biến môi trường (Environment Variables):

@@ -12,5 +12,6 @@ namespace TaskTrack.Service.Interfaces
         Task<(bool Success, string? ErrorMessage)> RevokeRefreshTokenAsync(int accountId);
         string GenerateJwtToken(SystemAccount account);
         Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(int accountId, ChangePasswordRequestDto dto);
+        Task<(bool Success, string? ErrorMessage, AccountResponseDto? Account)> UpdateProfileAsync(int accountId, UpdateProfileRequestDto dto);
     }
 }

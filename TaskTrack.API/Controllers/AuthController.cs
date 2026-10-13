@@ -9,7 +9,6 @@ using TaskTrack.Service.Interfaces;
 namespace TaskTrack.API.Controllers
 {
     [Route("api/[controller]")]
-    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -84,6 +83,33 @@ namespace TaskTrack.API.Controllers
             }
 
             return Ok(account);
+        }
+
+        /// <summary>
+        /// Update the display name of the currently logged-in account.
+        /// </summary>
+        [HttpPut("profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCurrentProfile([FromBody] UpdateProfileRequestDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out var accountId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _authService.UpdateProfileAsync(accountId, dto);
+            if (!result.Success)
+            {
+                return NotFound(new { message = result.ErrorMessage });
+            }
+
+            return Ok(result.Account);
         }
 
         /// <summary>

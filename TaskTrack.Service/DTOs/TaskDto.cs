@@ -15,6 +15,10 @@ public sealed class TaskDto
     public bool IsActive { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? ModifiedDate { get; set; }
+    public int? CreatedById { get; set; }
+    public int? UpdatedById { get; set; }
+    public AccountSummaryDto? CreatedBy { get; set; }
+    public AccountSummaryDto? UpdatedBy { get; set; }
     public ProjectSummaryDto Project { get; set; } = null!;
     public List<TagSummaryDto> Tags { get; set; } = [];
 }
@@ -32,6 +36,12 @@ public sealed class TagSummaryDto
     public string? Color { get; set; }
 }
 
+public sealed class AccountSummaryDto
+{
+    public int AccountId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+}
+
 public static class TaskMappings
 {
     public static readonly Expression<Func<TaskEntity, TaskDto>> ToDto = task => new TaskDto
@@ -46,6 +56,18 @@ public static class TaskMappings
         IsActive = task.IsActive,
         CreatedDate = task.CreatedDate,
         ModifiedDate = task.ModifiedDate,
+        CreatedById = task.CreatedById,
+        UpdatedById = task.UpdatedById,
+        CreatedBy = task.CreatedBy == null ? null : new AccountSummaryDto
+        {
+            AccountId = task.CreatedBy.AccountId,
+            FullName = task.CreatedBy.FullName
+        },
+        UpdatedBy = task.UpdatedBy == null ? null : new AccountSummaryDto
+        {
+            AccountId = task.UpdatedBy.AccountId,
+            FullName = task.UpdatedBy.FullName
+        },
         Project = task.Project == null ? new ProjectSummaryDto { ProjectId = task.ProjectId, ProjectName = string.Empty } : new ProjectSummaryDto
         {
             ProjectId = task.Project.ProjectId,

@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using TaskTrack.Repo.Models;
 using TaskTrack.Service.DTOs;
@@ -16,12 +15,12 @@ namespace TaskTrack.Service.Implementations
     public class AuthService : IAuthService
     {
         private readonly TaskmanagementDbEgrzContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly JwtSettings _jwtSettings;
 
-        public AuthService(TaskmanagementDbEgrzContext context, IConfiguration configuration)
+        public AuthService(TaskmanagementDbEgrzContext context, JwtSettings jwtSettings)
         {
             _context = context;
-            _configuration = configuration;
+            _jwtSettings = jwtSettings;
         }
 
         public async Task<(bool Success, string? ErrorMessage, AccountResponseDto? Account)> RegisterStaffAsync(RegisterRequestDto dto)
@@ -173,11 +172,7 @@ namespace TaskTrack.Service.Implementations
 
         public string GenerateJwtToken(SystemAccount account)
         {
-            var secret = _configuration["JWT_SECRET"]
-                ?? _configuration["Jwt:Secret"]
-                ?? "TaskTrackSuperSecretSecurityKey_2026_PRN232_Assignment2_Default!";
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var roleName = account.Role == 1 ? "Admin" : "Staff";
@@ -199,8 +194,8 @@ namespace TaskTrack.Service.Implementations
             var expiresAt = DateTime.UtcNow.AddHours(24);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"] ?? "TaskTrackAPI",
-                audience: _configuration["Jwt:Audience"] ?? "TaskTrackClient",
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
                 expires: expiresAt,
                 signingCredentials: credentials
@@ -226,6 +221,29 @@ namespace TaskTrack.Service.Implementations
             await _context.SaveChangesAsync();
 
             return (true, null);
+        }
+
+        public async Task<(bool Success, string? ErrorMessage, AccountResponseDto? Account)> UpdateProfileAsync(
+            int accountId,
+            UpdateProfileRequestDto dto)
+        {
+            var account = await _context.SystemAccounts.FindAsync(accountId);
+            if (account == null)
+            {
+                return (false, "Account not found.", null);
+            }
+
+            account.FullName = dto.FullName.Trim();
+            await _context.SaveChangesAsync();
+
+            return (true, null, new AccountResponseDto
+            {
+                AccountId = account.AccountId,
+                FullName = account.FullName,
+                Email = account.Email,
+                Role = account.Role,
+                CreatedDate = account.CreatedDate
+            });
         }
     }
 }

@@ -105,6 +105,7 @@ namespace TaskTrack.Service.Implementations
             task.DueDate = updatedData.DueDate;
             task.ProjectId = updatedData.ProjectId;
             task.IsActive = updatedData.IsActive;
+            task.UpdatedById = updatedData.UpdatedById;
             task.ModifiedDate = DateTime.Now;
 
             if (tagIds != null)
@@ -122,12 +123,13 @@ namespace TaskTrack.Service.Implementations
             return task;
         }
 
-        public async Task<bool> SoftDeleteTaskAsync(int id)
+        public async Task<bool> SoftDeleteTaskAsync(int id, int updatedById)
         {
             var task = await _taskRepo.GetByIdAsync(id);
             if (task == null) return false;
 
             task.IsActive = false;
+            task.UpdatedById = updatedById;
             task.ModifiedDate = DateTime.Now;
             _taskRepo.Update(task);
             await _taskRepo.SaveChangesAsync();

@@ -97,7 +97,13 @@ namespace TaskTrack.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _taskService.SoftDeleteTaskAsync(id);
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out var currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _taskService.SoftDeleteTaskAsync(id, currentUserId);
             if (!result) return NotFound(new { message = "Task not found." });
             return NoContent();
         }
